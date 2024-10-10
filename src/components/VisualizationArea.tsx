@@ -20,35 +20,29 @@ interface VisualizationAreaProps {
 const VisualizationArea: React.FC<VisualizationAreaProps> = ({ results }) => {
   if (!results) {
     return (
-      <Card>
-        <CardContent className="p-4 text-center text-gray-500">
-          No analysis results to display yet. Start a conversation to see visualizations here.
-        </CardContent>
-      </Card>
+      <div className="h-full flex items-center justify-center text-center text-gray-500">
+        No analysis results to display yet. Start a conversation to see visualizations here.
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Analysis Results</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="mb-4 text-gray-700 dark:text-gray-300">{results.text}</p>
-        {results.visualization && (
-          <div className="h-64 md:h-96">
-            <Chart
-              type={results.visualization.type}
-              data={results.visualization.data}
-              xKey={results.visualization.xKey}
-              yKey={results.visualization.yKey}
-              title={results.visualization.title}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="h-full flex flex-col">
+      <p className="mb-4 text-gray-700 dark:text-gray-300">{results.text}</p>
+      {results.visualization && (
+        <div className="flex-grow">
+          <Chart
+            type={results.visualization.type}
+            data={results.visualization.data}
+            xKey={results.visualization.xKey}
+            yKey={results.visualization.yKey}
+            title={results.visualization.title}
+          />
+        </div>
+      )}
+    </div>
   );
 };
 
 export default VisualizationArea;
+

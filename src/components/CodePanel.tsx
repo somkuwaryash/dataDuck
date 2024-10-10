@@ -41,20 +41,19 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
+    <div className="h-full flex flex-col">
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <div className="flex-grow flex flex-col">
         <Textarea
           value={code}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your Python code here..."
-          className="flex-grow font-mono text-sm mb-4"
+          className="flex-grow font-mono text-sm mb-2 resize-none"
         />
         <Button 
           onClick={handleExecute} 
           disabled={isLoading || !isPyodideReady}
+          className="w-full"
         >
           {isLoading ? 'Executing...' : (isPyodideReady ? 'Execute Code' : 'Initializing...')}
         </Button>
@@ -63,9 +62,10 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
             Error: {error}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
 export default CodePanel;
+

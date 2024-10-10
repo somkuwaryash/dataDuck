@@ -84,35 +84,38 @@ const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady }) => {
   };
 
   return (
-    <Tabs defaultValue={codeSnippets[0].id} className="w-full">
-      <TabsList className="mb-4 flex-wrap">
+    <Tabs defaultValue={codeSnippets[0].id} className="h-full flex flex-col">
+      <TabsList className="mb-2">
         {codeSnippets.map(snippet => (
-          <TabsTrigger key={snippet.id} value={snippet.id}>
+          <TabsTrigger key={snippet.id} value={snippet.id} className="flex-1">
             {snippet.title}
           </TabsTrigger>
         ))}
       </TabsList>
-      {codeSnippets.map(snippet => (
-        <TabsContent key={snippet.id} value={snippet.id} className="mt-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <CodePanel
-              code={snippet.code}
-              onChange={(newCode) => handleCodeChange(snippet.id, newCode)}
-              onExecute={(output, plot, plotlyData) => handleExecute(snippet.id, output, plot, plotlyData)}
-              title={`${snippet.title} Code`}
-              isPyodideReady={isPyodideReady}
-            />
-            <Console
-              output={snippet.output}
-              plot={snippet.plot}
-              plotlyData={snippet.plotlyData}
-              title={`${snippet.title} Console`}
-            />
-          </div>
-        </TabsContent>
-      ))}
+      <div className="flex-grow overflow-hidden">
+        {codeSnippets.map(snippet => (
+          <TabsContent key={snippet.id} value={snippet.id} className="h-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
+              <CodePanel
+                code={snippet.code}
+                onChange={(newCode) => handleCodeChange(snippet.id, newCode)}
+                onExecute={(output, plot, plotlyData) => handleExecute(snippet.id, output, plot, plotlyData)}
+                title={`${snippet.title} Code`}
+                isPyodideReady={isPyodideReady}
+              />
+              <Console
+                output={snippet.output}
+                plot={snippet.plot}
+                plotlyData={snippet.plotlyData}
+                title={`${snippet.title} Console`}
+              />
+            </div>
+          </TabsContent>
+        ))}
+      </div>
     </Tabs>
   );
 };
 
 export default CodeAndConsole;
+

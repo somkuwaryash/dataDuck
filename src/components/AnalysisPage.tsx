@@ -88,9 +88,9 @@ const AnalysisPage: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Data Analysis</h1>
         {isPyodideReady ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-1">
-              <CardContent className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+            <Card className="lg:col-span-1 flex flex-col">
+              <CardContent className="p-4 flex-grow overflow-y-auto">
                 <DataPreview
                   onDatasetSelect={handleDatasetSelect}
                   selectedDataset={selectedDataset}
@@ -99,23 +99,23 @@ const AnalysisPage: React.FC = () => {
             </Card>
             <Card className="lg:col-span-2">
               <CardContent className="p-4">
-                <Tabs defaultValue="chat" className="space-y-4">
+                <Tabs defaultValue="chat" className="flex-grow flex flex-col">
                   <TabsList>
-                    <TabsTrigger value="chat">Chat</TabsTrigger>
-                    <TabsTrigger value="visualization">
-                      Visualization
-                    </TabsTrigger>
-                    <TabsTrigger value="code">Code</TabsTrigger>
+                    <TabsTrigger value="chat" className="flex-1">Chat</TabsTrigger>
+                    <TabsTrigger value="visualization" className="flex-1">Visualization</TabsTrigger>
+                    <TabsTrigger value="code" className="flex-1">Code</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="chat">
+                  <div className="flex-grow overflow-y-auto">
+                  <TabsContent value="chat" className="h-full">
                     <ChatInterface onQuerySubmit={handleQuerySubmit} />
                   </TabsContent>
-                  <TabsContent value="visualization">
+                  <TabsContent value="visualization" className="h-full">
                     <VisualizationArea results={analysisResults} />
                   </TabsContent>
-                  <TabsContent value="code">
+                  <TabsContent value="code" className="h-full">
                     <CodeAndConsole isPyodideReady={isPyodideReady} />
                   </TabsContent>
+                  </div>
                 </Tabs>
               </CardContent>
             </Card>

@@ -64,7 +64,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-16rem)]">
+    <div className="flex flex-col h-[calc(100vh-18rem)]">
       <ScrollArea className="flex-grow mb-4" ref={scrollAreaRef}>
         <div className="space-y-4 p-4">
           {messages.map((message) => (
