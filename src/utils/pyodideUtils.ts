@@ -1,11 +1,19 @@
+import { PlotlyData } from '@/types/analysis';
+
 declare global {
     interface Window {
-      loadPyodide: any;
-      pyodide: any;
+      loadPyodide: (config: { indexURL: string }) => Promise<PyodideInterface>;
+      pyodide: PyodideInterface;
     }
   }
   
-  let pyodide: any = null;
+  interface PyodideInterface {
+    loadPackage: (packages: string[]) => Promise<void>;
+    runPythonAsync: (code: string) => Promise<unknown>;
+    runPython: (code: string) => unknown;
+  }
+  
+  let pyodide: PyodideInterface | null = null;
   
   export const initializePyodide = async (): Promise<void> => {
     if (typeof window !== "undefined" && !window.pyodide) {
@@ -30,9 +38,7 @@ declare global {
     }
   };
   
-// src/utils/pyodideUtils.ts
-
-export const executePythonCode = async (code: string): Promise<{ output: string; plot?: string }> => {
+  export const executePythonCode = async (code: string): Promise<{ output: string; plot?: string; plotlyData?: PlotlyData }> => {
     if (!pyodide) {
       throw new Error('Pyodide is not initialized');
     }
@@ -52,7 +58,7 @@ export const executePythonCode = async (code: string): Promise<{ output: string;
       console.log('Python execution result:', result);
   
       // Get the captured output
-      const output = pyodide.runPython('sys.stdout.getvalue()');
+      const output = pyodide.runPython('sys.stdout.getvalue()') as string;
   
       // The result should be the base64 string of the plot
       const plot = typeof result === 'string' ? result : undefined;

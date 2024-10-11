@@ -25,16 +25,19 @@ const FileUpload: React.FC = () => {
     multiple: false,
   });
 
-  const handleFileUpload = async (file: File) => {
-    setUploadStatus('idle');
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setUploadStatus('success');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      setUploadStatus('error');
-    }
-  };
+  // In the handleFileUpload function, use the file parameter
+const handleFileUpload = async (file: File) => {
+  setUploadStatus('idle');
+  try {
+    // Simulate file upload
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log('Uploaded file:', file.name); // Use the file parameter
+    setUploadStatus('success');
+  } catch (error) {
+    console.error('Upload failed:', error);
+    setUploadStatus('error');
+  }
+};
 
   return (
     <div className="max-w-xl mx-auto mt-10">

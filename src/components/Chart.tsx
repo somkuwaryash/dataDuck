@@ -2,27 +2,31 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-import { useTheme } from 'next-themes'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+// import { useTheme } from 'next-themes'
+import { Line, Bar, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const DynamicLineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
 const DynamicBarChart = dynamic(() => import('recharts').then((mod) => mod.BarChart), { ssr: false });
 const DynamicPieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), { ssr: false });
 
+interface DataPoint {
+  [key: string]: string | number;
+}
+
 interface ChartProps {
   type: 'line' | 'bar' | 'pie';
-  data: any[];
+  data: DataPoint[];
   xKey: string;
   yKey: string;
   title: string;
 }
 
 const Chart: React.FC<ChartProps> = ({ type, data, xKey, yKey, title }) => {
-    const { theme } = useTheme()
-  const isDark = theme === 'dark'
+    // const { theme } = useTheme()
+  // const isDark = theme === 'dark'
 
-  const chartColor = isDark ? '#38bdf8' : '#0ea5e9'
-  const axisColor = isDark ? '#94a3b8' : '#64748b'
+  // const chartColor = isDark ? '#38bdf8' : '#0ea5e9'
+  // const axisColor = isDark ? '#94a3b8' : '#64748b'
   const renderChart = (): React.ReactElement => {
     switch (type) {
       case 'line':

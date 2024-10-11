@@ -2,14 +2,13 @@
 
 import React from 'react';
 import Chart from './Chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface VisualizationAreaProps {
   results: {
     text: string;
     visualization?: {
       type: 'line' | 'bar' | 'pie';
-      data: any[];
+      data: Array<{ [key: string]: string | number }>;
       xKey: string;
       yKey: string;
       title: string;

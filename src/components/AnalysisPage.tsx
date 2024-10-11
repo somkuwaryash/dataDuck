@@ -20,13 +20,13 @@ const PyodideProvider = dynamic(() => import("@/components/PyodideProvider"), {
 
 interface AnalysisResult {
   text: string;
-  visualization?: {
-    type: "line" | "bar" | "pie";
-    data: any[];
-    xKey: string;
-    yKey: string;
-    title: string;
-  };
+visualization?: {
+  type: "line" | "bar" | "pie";
+  data: Array<{ [key: string]: string | number }>;
+  xKey: string;
+  yKey: string;
+  title: string;
+};
 }
 
 interface ChatMessage {

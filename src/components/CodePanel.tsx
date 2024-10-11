@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { executePythonCode } from '@/utils/pyodideUtils';
+import { PlotlyData } from '@/types/analysis';
 
 interface CodePanelProps {
   code: string;
   onChange: (code: string) => void;
-  onExecute: (output: string, plot?: string, plotlyData?: any) => void;
+  onExecute: (output: string, plot?: string, plotlyData?: PlotlyData) => void;
   title: string;
   isPyodideReady: boolean;  
 }
@@ -27,9 +27,9 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
     setError(null);
     try {
       console.log('Executing code:', code);
-      const { output, plot } = await executePythonCode(code);
-      console.log('Execution result:', { output, plotAvailable: !!plot });
-      onExecute(output, plot);
+      const { output, plot, plotlyData } = await executePythonCode(code);
+      console.log('Execution result:', { output, plotAvailable: !!plot, plotlyDataAvailable: !!plotlyData });
+      onExecute(output, plot, plotlyData as PlotlyData);
     } catch (error) {
       console.error('Execution error:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -48,7 +48,7 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
           value={code}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your Python code here..."
-          className="flex-grow font-mono text-sm mb-2 "
+          className="flex-grow font-mono text-sm mb-2"
         />
         <Button 
           onClick={handleExecute} 
@@ -68,4 +68,3 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
 };
 
 export default CodePanel;
-

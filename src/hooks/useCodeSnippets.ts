@@ -9,7 +9,7 @@ export interface CodeSnippet {
   code: string;
   output: string;
   plot?: string;
-  plotlyData?: any;
+  plotlyData?: Record<string, unknown>;
 }
 
 const initialCodeSnippets: CodeSnippet[] = [
@@ -207,7 +207,7 @@ print(df.info())
     );
   };
 
-  const handleExecute = (id: string, output: string, plot?: string, plotlyData?: any) => {
+  const handleExecute = (id: string, output: string, plot?: string, plotlyData?: Record<string, unknown>) => {
     setCodeSnippets(snippets =>
       snippets.map(snippet =>
         snippet.id === id ? { ...snippet, output, plot, plotlyData } : snippet

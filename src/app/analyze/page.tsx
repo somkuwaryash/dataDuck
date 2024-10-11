@@ -1,8 +1,12 @@
-import React from 'react';
-import AnalysisPage from '@/components/AnalysisPage';
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
-const AnalysisRoute: React.FC = () => {
-  return <AnalysisPage />;
-};
+const AnalysisPageClient = dynamic(() => import('@/components/AnalysisPage'), { ssr: false });
 
-export default AnalysisRoute;
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnalysisPageClient />
+    </Suspense>
+  );
+}
