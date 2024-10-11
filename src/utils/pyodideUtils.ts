@@ -30,7 +30,9 @@ declare global {
     }
   };
   
-  export const executePythonCode = async (code: string): Promise<{ output: string; plot?: string; plotlyData?: any }> => {
+// src/utils/pyodideUtils.ts
+
+export const executePythonCode = async (code: string): Promise<{ output: string; plot?: string }> => {
     if (!pyodide) {
       throw new Error('Pyodide is not initialized');
     }
@@ -53,7 +55,7 @@ declare global {
       const output = pyodide.runPython('sys.stdout.getvalue()');
   
       // The result should be the base64 string of the plot
-      const plot = typeof result === 'string' ? `data:image/png;base64,${result}` : undefined;
+      const plot = typeof result === 'string' ? result : undefined;
   
       // Reset stdout
       pyodide.runPython('sys.stdout = sys.__stdout__');

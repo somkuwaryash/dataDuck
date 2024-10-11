@@ -48,7 +48,7 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
           value={code}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your Python code here..."
-          className="flex-grow font-mono text-sm mb-2 resize-none"
+          className="flex-grow font-mono text-sm mb-2 "
         />
         <Button 
           onClick={handleExecute} 

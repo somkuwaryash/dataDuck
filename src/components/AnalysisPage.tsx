@@ -1,4 +1,6 @@
-"use client";
+// src/components/AnalysisPage.tsx
+
+'use client';
 
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,6 +11,8 @@ import VisualizationArea from "./VisualizationArea";
 import CodeAndConsole from "./CodeAndConsole";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dataset, getDatasetById } from "@/utils/datasetUtils";
+import { AIResponse } from "@/utils/aiUtils";
 
 const PyodideProvider = dynamic(() => import("@/components/PyodideProvider"), {
   ssr: false,
@@ -25,63 +29,82 @@ interface AnalysisResult {
   };
 }
 
+interface ChatMessage {
+  id: string;
+  text: string;
+  isUser: boolean;
+  code?: string;
+  executionResult?: string;
+}
+
 const AnalysisPage: React.FC = () => {
-  const [selectedDataset, setSelectedDataset] = useState<string | null>(null);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(
-    null
-  );
-  const [consoleOutput, setConsoleOutput] = useState<string>("");
+  const [selectedDataset, setSelectedDataset] = useState<Dataset | null>(null);
+  const [dataFrameInfo, setDataFrameInfo] = useState<string>('');
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [isPyodideReady, setIsPyodideReady] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const [isPyodideReady, setIsPyodideReady] = useState(false);
 
   const handlePyodideReady = useCallback(() => {
     setIsPyodideReady(true);
   }, []);
 
   useEffect(() => {
-    const datasetParam = searchParams.get("dataset");
-    if (datasetParam) {
-      setSelectedDataset(datasetParam);
+    const datasetId = searchParams.get("dataset");
+    if (datasetId) {
+      const dataset = getDatasetById(datasetId);
+      if (dataset) {
+        setSelectedDataset(dataset);
+      }
     }
   }, [searchParams]);
 
   const handleDatasetSelect = useCallback(
-    (datasetName: string) => {
-      setSelectedDataset(datasetName);
+    (dataset: Dataset, dataFrame: string) => {
+      setSelectedDataset(dataset);
+      setDataFrameInfo(dataFrame);
       const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set("dataset", datasetName);
+      newSearchParams.set("dataset", dataset.id);
       router.push(`/analyze?${newSearchParams.toString()}`, { scroll: false });
     },
     [router, searchParams]
   );
 
-  const handleQuerySubmit = useCallback(
-    async (query: string): Promise<AnalysisResult> => {
-      // Simulate API call to backend for processing
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleQuerySubmit = useCallback(async (query: string, aiResponse: AIResponse, executionResult: string): Promise<void> => {
+    const newUserMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: query,
+      isUser: true,
+    };
 
-      const simulatedResponse: AnalysisResult = {
-        text: `Analysis results for query: "${query}" on dataset: ${selectedDataset}`,
-        visualization: {
-          type: "bar",
-          data: [
-            { name: "Category A", value: Math.random() * 100 },
-            { name: "Category B", value: Math.random() * 100 },
-            { name: "Category C", value: Math.random() * 100 },
-          ],
-          xKey: "name",
-          yKey: "value",
-          title: "Sample Visualization",
-        },
-      };
+    const newAIMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      text: aiResponse.text,
+      isUser: false,
+      code: aiResponse.code,
+      executionResult: executionResult,
+    };
 
-      setAnalysisResults(simulatedResponse);
-      return simulatedResponse;
-    },
-    [selectedDataset]
-  );
+    setChatMessages(prevMessages => [...prevMessages, newUserMessage, newAIMessage]);
+
+    const simulatedResponse: AnalysisResult = {
+      text: `Analysis results for query: "${query}"\n\nAI Response: ${aiResponse.text}\n\nExecution Result: ${executionResult}`,
+      visualization: {
+        type: "bar",
+        data: [
+          { name: "Category A", value: Math.random() * 100 },
+          { name: "Category B", value: Math.random() * 100 },
+          { name: "Category C", value: Math.random() * 100 },
+        ],
+        xKey: "name",
+        yKey: "value",
+        title: "Sample Visualization",
+      },
+    };
+  
+    setAnalysisResults(simulatedResponse);
+  }, []);
 
   return (
     <PyodideProvider onReady={handlePyodideReady}>
@@ -93,7 +116,7 @@ const AnalysisPage: React.FC = () => {
               <CardContent className="p-4 flex-grow overflow-y-auto">
                 <DataPreview
                   onDatasetSelect={handleDatasetSelect}
-                  selectedDataset={selectedDataset}
+                  selectedDatasetId={selectedDataset?.id || null}
                 />
               </CardContent>
             </Card>
@@ -106,15 +129,20 @@ const AnalysisPage: React.FC = () => {
                     <TabsTrigger value="code" className="flex-1">Code</TabsTrigger>
                   </TabsList>
                   <div className="flex-grow overflow-y-auto">
-                  <TabsContent value="chat" className="h-full">
-                    <ChatInterface onQuerySubmit={handleQuerySubmit} />
-                  </TabsContent>
-                  <TabsContent value="visualization" className="h-full">
-                    <VisualizationArea results={analysisResults} />
-                  </TabsContent>
-                  <TabsContent value="code" className="h-full">
-                    <CodeAndConsole isPyodideReady={isPyodideReady} />
-                  </TabsContent>
+                    <TabsContent value="chat" className="h-full">
+                      <ChatInterface 
+                        onQuerySubmit={handleQuerySubmit} 
+                        dataFrameInfo={dataFrameInfo}
+                        messages={chatMessages}
+                        setMessages={setChatMessages}
+                      />
+                    </TabsContent>
+                    <TabsContent value="visualization" className="h-full">
+                      <VisualizationArea results={analysisResults} />
+                    </TabsContent>
+                    <TabsContent value="code" className="h-full">
+                      <CodeAndConsole isPyodideReady={isPyodideReady} selectedDataset={selectedDataset} />
+                    </TabsContent>
                   </div>
                 </Tabs>
               </CardContent>
