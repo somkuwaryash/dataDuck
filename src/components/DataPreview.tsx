@@ -62,7 +62,7 @@ print(df.info())
   }, [selectedDatasetId, datasets, handleDatasetSelect]);
 
   return (
-    <Card className="h-[700px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
+    <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
       <CardHeader className="pb-2 flex-shrink-0 border-b border-gray-700">
         <CardTitle>Available Datasets</CardTitle>
       </CardHeader>

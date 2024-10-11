@@ -47,7 +47,7 @@ const Console: React.FC<ConsoleProps> = ({ output, visualization, title, isLoadi
   };
 
   return (
-    <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
+    <Card className="h-[500px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
       <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-gray-700">
         <CardTitle>{title}</CardTitle>
         <div className="flex space-x-2">
