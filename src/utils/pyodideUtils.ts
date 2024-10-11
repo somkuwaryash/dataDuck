@@ -1,5 +1,3 @@
-import { PlotlyData } from '@/types/analysis';
-
 declare global {
     interface Window {
       loadPyodide: (config: { indexURL: string }) => Promise<PyodideInterface>;
@@ -38,7 +36,7 @@ declare global {
     }
   };
   
-  export const executePythonCode = async (code: string): Promise<{ output: string; plot?: string; plotlyData?: PlotlyData }> => {
+  export const executePythonCode = async (code: string): Promise<{ output: string; executionResult: string }> => {
     if (!pyodide) {
       throw new Error('Pyodide is not initialized');
     }
@@ -57,21 +55,21 @@ declare global {
       const result = await pyodide.runPythonAsync(code);
       console.log('Python execution result:', result);
   
-      // Get the captured output
-      const output = pyodide.runPython('sys.stdout.getvalue()') as string;
-  
-      // The result should be the base64 string of the plot
-      const plot = typeof result === 'string' ? result : undefined;
+      // Get the captured output and convert it to a string
+      const output = String(pyodide.runPython('sys.stdout.getvalue()'));
   
       // Reset stdout
       pyodide.runPython('sys.stdout = sys.__stdout__');
   
-      return { output, plot };
+      // Convert the result to a string if it's not already
+      const executionResult = typeof result === 'string' ? result : JSON.stringify(result);
+  
+      return { output, executionResult };
     } catch (error) {
       console.error('Error in Python execution:', error);
       if (error instanceof Error) {
-        return { output: `Error: ${error.message}` };
+        return { output: `Error: ${error.message}`, executionResult: '' };
       }
-      return { output: 'An unknown error occurred' };
+      return { output: 'An unknown error occurred', executionResult: '' };
     }
   };

@@ -2,74 +2,53 @@
 
 import React from 'react';
 import dynamic from 'next/dynamic';
-// import { useTheme } from 'next-themes'
-import { Line, Bar, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useTheme } from 'next-themes'
+import Plotly from 'plotly.js';
 
-const DynamicLineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
-const DynamicBarChart = dynamic(() => import('recharts').then((mod) => mod.BarChart), { ssr: false });
-const DynamicPieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), { ssr: false });
-
-interface DataPoint {
-  [key: string]: string | number;
-}
+const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
 interface ChartProps {
   type: 'line' | 'bar' | 'pie';
-  data: DataPoint[];
+  data: Array<{ [key: string]: string | number }>;
   xKey: string;
   yKey: string;
   title: string;
 }
 
 const Chart: React.FC<ChartProps> = ({ type, data, xKey, yKey, title }) => {
-    // const { theme } = useTheme()
-  // const isDark = theme === 'dark'
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
 
-  // const chartColor = isDark ? '#38bdf8' : '#0ea5e9'
-  // const axisColor = isDark ? '#94a3b8' : '#64748b'
-  const renderChart = (): React.ReactElement => {
-    switch (type) {
-      case 'line':
-        return (
-          <DynamicLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xKey} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey={yKey} stroke="#8884d8" />
-          </DynamicLineChart>
-        );
-      case 'bar':
-        return (
-          <DynamicBarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xKey} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey={yKey} fill="#8884d8" />
-          </DynamicBarChart>
-        );
-      case 'pie':
-        return (
-          <DynamicPieChart margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <Pie data={data} dataKey={yKey} nameKey={xKey} fill="#8884d8" label />
-            <Tooltip />
-            <Legend />
-          </DynamicPieChart>
-        );
-      default:
-        return <div>Unsupported chart type</div>;
-    }
+  const chartColor = isDark ? '#38bdf8' : '#0ea5e9'
+  const backgroundColor = isDark ? '#1f2937' : '#ffffff'
+  const textColor = isDark ? '#f3f4f6' : '#1f2937'
+
+  const plotData: Plotly.Data[] = [{
+    x: data.map(item => item[xKey]),
+    y: data.map(item => item[yKey]),
+    type: type as Plotly.PlotType,
+    marker: { color: chartColor },
+  }];
+
+  const layout: Partial<Plotly.Layout> = {
+    title: {
+      text: title,
+      font: { color: textColor },
+    },
+    paper_bgcolor: backgroundColor,
+    plot_bgcolor: backgroundColor,
+    xaxis: { title: xKey, color: textColor },
+    yaxis: { title: yKey, color: textColor },
   };
 
   return (
     <div className="w-full h-full">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <ResponsiveContainer width="100%" height="100%">
-        {renderChart()}
-      </ResponsiveContainer>
+      <Plot
+        data={plotData}
+        layout={layout}
+        config={{ responsive: true }}
+        className="w-full h-full"
+      />
     </div>
   );
 };

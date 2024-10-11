@@ -1,6 +1,7 @@
-// src/components/CodeAndConsole.tsx
+'use client';
 
 import React from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodePanel from "./CodePanel";
 import Console from "./Console";
@@ -16,6 +17,7 @@ interface CodeAndConsoleProps {
 
 const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady, selectedDataset }) => {
   const { codeSnippets, isLoading, error, handleCodeChange, handleExecute } = useCodeSnippets(selectedDataset);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   if (isLoading) {
     return (
@@ -35,6 +37,25 @@ const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady, selecte
     );
   }
 
+  const handleCodeExecution = async (id: string, output: string, executionResult: string) => {
+    setIsExecuting(true);
+    let parsedOutput;
+    try {
+      parsedOutput = JSON.parse(output);
+    } catch (e) {
+      console.error("Failed to parse output:", e);
+      parsedOutput = output;
+    }
+    // TODO: Consider using executionResult for additional processing or debugging
+    console.log('Execution result:', executionResult);
+    await handleExecute(id, parsedOutput);
+    setIsExecuting(false);
+  };
+
+  const handleClearConsole = (id: string) => {
+    handleExecute(id, { output: '' });
+  };
+
   return (
     <Tabs defaultValue={codeSnippets[0].id} className="h-full flex flex-col">
       <TabsList className="mb-2">
@@ -51,15 +72,17 @@ const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady, selecte
               <CodePanel
                 code={snippet.code}
                 onChange={(newCode) => handleCodeChange(snippet.id, newCode)}
-                onExecute={(output, plot, plotlyData) => handleExecute(snippet.id, output, plot, plotlyData)}
+                onExecute={(output, executionResult) => handleCodeExecution(snippet.id, output, executionResult)}
                 title={`${snippet.title} Code`}
                 isPyodideReady={isPyodideReady}
               />
               <Console
-  output={snippet.output}
-  plot={snippet.plot}
-  title={`${snippet.title} Console`}
-/>
+                output={snippet.output}
+                visualization={snippet.visualization}
+                title={`${snippet.title} Console`}
+                isLoading={isExecuting}
+                onClear={() => handleClearConsole(snippet.id)}
+              />
             </div>
           </TabsContent>
         ))}

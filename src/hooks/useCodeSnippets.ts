@@ -1,5 +1,3 @@
-// src/hooks/useCodeSnippets.ts
-
 import { useState, useEffect } from 'react';
 import { Dataset, getDatasetContent } from "@/utils/datasetUtils";
 
@@ -8,8 +6,19 @@ export interface CodeSnippet {
   title: string;
   code: string;
   output: string;
+  visualization?: {
+    type: 'line' | 'bar' | 'pie';
+    data: Array<{ [key: string]: string | number }>;
+    xKey: string;
+    yKey: string;
+    title: string;
+  };
+}
+
+interface ExecutionOutput {
   plot?: string;
-  plotlyData?: Record<string, unknown>;
+  visualization?: CodeSnippet['visualization'];
+  [key: string]: unknown;
 }
 
 const initialCodeSnippets: CodeSnippet[] = [
@@ -89,6 +98,7 @@ print(df.info())
     import io
     import base64
     import numpy as np
+    import json
     
     # Assuming 'df' is your DataFrame
     
@@ -118,13 +128,23 @@ print(df.info())
         plot = base64.b64encode(buffer.getvalue()).decode('utf-8')
         plt.close()
     
-        print(f"Visualization created for column: {numeric_column}")
-        # Return the base64 encoded string of the plot
-        plot
+        # Prepare data for Plotly visualization
+        plotly_data = df[numeric_column].value_counts().reset_index()
+        plotly_data.columns = ['value', 'count']
+        plotly_data = plotly_data.to_dict('records')
     
+        visualization = {
+            "type": "bar",
+            "data": plotly_data,
+            "xKey": "value",
+            "yKey": "count",
+            "title": f"Distribution of {numeric_column}"
+        }
+    
+        print(f"Visualization created for column: {numeric_column}")
+        print(json.dumps({"plot": plot, "visualization": visualization}))
     `,
     output: '',
-    plot: '',
   },
   {
     id: 'misc',
@@ -207,13 +227,21 @@ print(df.info())
     );
   };
 
-  const handleExecute = (id: string, output: string, plot?: string, plotlyData?: Record<string, unknown>) => {
+  const handleExecute = (id: string, output: ExecutionOutput) => {
     setCodeSnippets(snippets =>
       snippets.map(snippet =>
-        snippet.id === id ? { ...snippet, output, plot, plotlyData } : snippet
+        snippet.id === id ? { ...snippet, output: JSON.stringify(output), visualization: output.visualization } : snippet
       )
     );
   };
 
-  return { codeSnippets, isLoading, error, handleCodeChange, handleExecute };
+  const clearOutput = (id: string) => {
+    setCodeSnippets(snippets =>
+      snippets.map(snippet =>
+        snippet.id === id ? { ...snippet, output: '', visualization: undefined } : snippet
+      )
+    );
+  };
+
+  return { codeSnippets, isLoading, error, handleCodeChange, handleExecute, clearOutput };
 };

@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { ThemeSwitcher } from './ThemeSwitcher'
+// import { ThemeSwitcher } from './ThemeSwitcher'
 
 const Header: React.FC = () => {
   return (
@@ -15,7 +15,7 @@ const Header: React.FC = () => {
             <li><NavLink href="/analyze">Analyze</NavLink></li>
             <li><NavLink href="/visualize">Visualize</NavLink></li>
           </ul>
-          <ThemeSwitcher />
+          {/* <ThemeSwitcher /> */}
         </div>
       </nav>
     </header>

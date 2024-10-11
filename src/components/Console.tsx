@@ -1,57 +1,101 @@
-// src/components/Console.tsx
+import React, { useState } from 'react';
+import Chart from './Chart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Loader2, Copy, Trash2 } from 'lucide-react';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
 
-import React from 'react';
-import dynamic from 'next/dynamic';
-import { PlotParams } from 'react-plotly.js';
-import Plotly from 'plotly.js';
-
-const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
+SyntaxHighlighter.registerLanguage('python', python);
 
 interface ConsoleProps {
   output: string;
-  plot?: string;
+  visualization?: {
+    type: 'line' | 'bar' | 'pie';
+    data: Array<{ [key: string]: string | number }>;
+    xKey: string;
+    yKey: string;
+    title: string;
+  };
   title: string;
+  isLoading: boolean;
+  onClear: () => void;
 }
 
-const Console: React.FC<ConsoleProps> = ({ output, plot, title }) => {
-  const plotData: Partial<PlotParams> | null = plot
-    ? {
-        data: [{
-          type: 'image' as const,
-          source: `data:image/png;base64,${plot}`,
-          x: [0, 1],
-          y: [0, 1],
-          z: [[0, 1], [0, 1]],  // Required for image type
-          colormodel: 'rgba',   // Specify the color model
-        } as Partial<Plotly.PlotData>],
-        layout: {
-          width: 600,
-          height: 400,
-          xaxis: { visible: false, range: [0, 1] },
-          yaxis: { visible: false, range: [0, 1] },
-        },
-      }
-    : null;
+const Console: React.FC<ConsoleProps> = ({ output, visualization, title, isLoading, onClear }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  let parsedOutput;
+  let base64Plot;
+
+  try {
+    parsedOutput = JSON.parse(output);
+    base64Plot = parsedOutput.plot;
+    visualization = parsedOutput.visualization;
+  } catch (e) {
+    console.error("Failed to parse output:", e);
+    // If parsing fails, it means the output is not JSON, so we use it as is
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(output).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
 
   return (
-    <div className="h-full flex flex-col">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="flex-grow overflow-auto bg-gray-100 dark:bg-gray-800 p-4 rounded-md">
-        <pre className="font-mono text-sm whitespace-pre-wrap text-gray-800 dark:text-gray-200">
-          {output || 'No output yet. Execute some code to see the results.'}
-        </pre>
-        {plotData && (
-          <div className="mt-4">
-            <h4 className="text-md font-semibold mb-2">Plot:</h4>
-            <Plot
-              data={plotData.data || []}
-              layout={plotData.layout || {}}
-              config={{ responsive: true }}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+    <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-gray-700">
+        <CardTitle>{title}</CardTitle>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm" onClick={handleCopy} className="bg-gray-800 text-gray-100 hover:bg-gray-700">
+            {isCopied ? 'Copied!' : <Copy className="h-4 w-4" />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={onClear} className="bg-gray-800 text-gray-100 hover:bg-gray-700">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow overflow-hidden p-0">
+        <ScrollArea className="h-[calc(100%-2rem)] px-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : (
+            <>
+              <SyntaxHighlighter
+                language="python"
+                style={vs2015}
+                customStyle={{ background: 'transparent' }}
+                className="font-mono text-sm mb-4"
+              >
+                {parsedOutput ? JSON.stringify(parsedOutput, null, 2) : output || 'No output yet. Execute some code to see the results.'}
+              </SyntaxHighlighter>
+              {base64Plot && (
+                <div className="mb-4">
+                  <img src={`data:image/png;base64,${base64Plot}`} alt="Matplotlib plot" className="max-w-full" />
+                </div>
+              )}
+              {visualization && (
+                <div className="h-64 md:h-96 mt-4">
+                  <Chart
+                    type={visualization.type}
+                    data={visualization.data}
+                    xKey={visualization.xKey}
+                    yKey={visualization.yKey}
+                    title={visualization.title}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </ScrollArea>
+      </CardContent>
+    </Card>
   );
 };
 

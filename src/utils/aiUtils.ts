@@ -14,20 +14,16 @@ export interface AIResponse {
   code?: string;
 }
 
-export async function queryAI(userPrompt: string, systemPrompt: string): Promise<AIResponse> {
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export async function queryAI(messages: ChatMessage[]): Promise<AIResponse> {
   try {
     const completion = await api.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
+      messages: messages,
       temperature: 0.7,
       max_tokens: 1000,
     });

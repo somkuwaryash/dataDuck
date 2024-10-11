@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { executePythonCode } from '@/utils/pyodideUtils';
-import { PlotlyData } from '@/types/analysis';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Play, Copy } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 
 interface CodePanelProps {
   code: string;
   onChange: (code: string) => void;
-  onExecute: (output: string, plot?: string, plotlyData?: PlotlyData) => void;
+  onExecute: (output: string, executionResult: string) => void;
   title: string;
-  isPyodideReady: boolean;  
+  isPyodideReady: boolean;
 }
 
 const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title, isPyodideReady }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleExecute = async () => {
     if (!isPyodideReady) {
       console.log('Python environment not ready');
-      onExecute('Python environment is not ready yet. Please wait and try again.');
+      onExecute('Python environment is not ready yet. Please wait and try again.', '');
       return;
     }
 
@@ -27,43 +29,73 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
     setError(null);
     try {
       console.log('Executing code:', code);
-      const { output, plot, plotlyData } = await executePythonCode(code);
-      console.log('Execution result:', { output, plotAvailable: !!plot, plotlyDataAvailable: !!plotlyData });
-      onExecute(output, plot, plotlyData as PlotlyData);
+      const { output, executionResult } = await executePythonCode(code);
+      console.log('Execution result:', { output, executionResult });
+      onExecute(output, executionResult);
     } catch (error) {
       console.error('Execution error:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       setError(errorMessage);
-      onExecute(`Error: ${errorMessage}`);
+      onExecute(`Error: ${errorMessage}`, '');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
   return (
-    <div className="h-full flex flex-col">
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="flex-grow flex flex-col">
-        <Textarea
+    <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between border-b border-gray-700">
+        <CardTitle>{title}</CardTitle>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleCopy} 
+            className="bg-gray-800 text-gray-100 hover:bg-gray-700"
+          >
+            {isCopied ? 'Copied!' : <Copy className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExecute}
+            disabled={isLoading || !isPyodideReady}
+            className="bg-gray-800 text-gray-100 hover:bg-gray-700"
+          >
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow overflow-hidden p-4 flex flex-col">
+      <CardContent className="flex-grow overflow-hidden p-0">
+        <Editor
+          height="100%"
+          defaultLanguage="python"
+          theme="vs-dark"
           value={code}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter your Python code here..."
-          className="flex-grow font-mono text-sm mb-2"
+          onChange={(value) => onChange(value || '')}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+          }}
         />
-        <Button 
-          onClick={handleExecute} 
-          disabled={isLoading || !isPyodideReady}
-          className="w-full"
-        >
-          {isLoading ? 'Executing...' : (isPyodideReady ? 'Execute Code' : 'Initializing...')}
-        </Button>
+      </CardContent>
         {error && (
           <div className="mt-2 text-red-500">
             Error: {error}
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

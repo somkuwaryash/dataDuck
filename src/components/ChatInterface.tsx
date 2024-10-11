@@ -5,14 +5,14 @@ import { FiSend, FiLoader } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { queryAI, AIResponse } from '@/utils/aiUtils';
+import { queryAI, AIResponse, ChatMessage } from '@/utils/aiUtils';
 import { executePythonCode } from '@/utils/pyodideUtils';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Avatar } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 
-interface ChatMessage {
+interface DisplayMessage {
   id: string;
   text: string;
   isUser: boolean;
@@ -23,13 +23,13 @@ interface ChatMessage {
 interface ChatInterfaceProps {
   onQuerySubmit: (query: string, aiResponse: AIResponse, executionResult: string) => Promise<void>;
   dataFrameInfo: string;
-  messages: ChatMessage[];
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameInfo, messages, setMessages }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameInfo }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<DisplayMessage[]>([]);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -41,6 +41,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
 
   useEffect(scrollToBottom, [messages]);
 
+  useEffect(() => {
+    // Initialize chat history with system message
+    setChatHistory([
+      {
+        role: 'system',
+        content: `You are a data analysis assistant. Interpret the user's query, generate Python code for analysis, and provide explanations. Here's the current dataset information:
+
+${dataFrameInfo}
+
+Use the 'df' DataFrame for your analysis.`
+      }
+    ]);
+  }, [dataFrameInfo]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim() && !isLoading) {
@@ -48,17 +62,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
       const query = inputValue.trim();
       setInputValue('');
 
-      const newUserMessage: ChatMessage = { id: Date.now().toString(), text: query, isUser: true };
+      const newUserMessage: DisplayMessage = { id: Date.now().toString(), text: query, isUser: true };
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
 
+      // Add user message to chat history
+      const updatedChatHistory: ChatMessage[] = [...chatHistory, { role: 'user', content: query }];
+      setChatHistory(updatedChatHistory);
+
       try {
-        const systemPrompt = `You are a data analysis assistant. Interpret the user's query, generate Python code for analysis, and provide explanations. Here's the current dataset information:
-
-${dataFrameInfo}
-
-Use the 'df' DataFrame for your analysis.`;
-
-        const aiResponse = await queryAI(query, systemPrompt);
+        const aiResponse = await queryAI(updatedChatHistory);
 
         let executionResult = '';
         if (aiResponse.code) {
@@ -66,7 +78,7 @@ Use the 'df' DataFrame for your analysis.`;
           executionResult = output;
         }
 
-        const newAIMessage: ChatMessage = { 
+        const newAIMessage: DisplayMessage = { 
           id: (Date.now() + 1).toString(), 
           text: aiResponse.text,
           isUser: false,
@@ -75,10 +87,13 @@ Use the 'df' DataFrame for your analysis.`;
         };
         setMessages(prevMessages => [...prevMessages, newAIMessage]);
 
+        // Add AI response to chat history
+        setChatHistory(prev => [...prev, { role: 'assistant', content: aiResponse.text }]);
+
         await onQuerySubmit(query, aiResponse, executionResult);
       } catch (error) {
         console.error('Error processing query:', error);
-        const errorMessage: ChatMessage = { 
+        const errorMessage: DisplayMessage = { 
           id: (Date.now() + 1).toString(), 
           text: 'Sorry, there was an error processing your request.', 
           isUser: false 
@@ -90,7 +105,7 @@ Use the 'df' DataFrame for your analysis.`;
     }
   };
 
-  const renderMessage = (message: ChatMessage) => {
+  const renderMessage = (message: DisplayMessage) => {
     return (
       <Card className={`mb-4 ${message.isUser ? 'ml-auto' : 'mr-auto'} max-w-[80%]`}>
         <CardContent className="p-4">

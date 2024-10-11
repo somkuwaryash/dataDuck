@@ -61,7 +61,10 @@ export const getDatasetContent = async (fileName: string): Promise<string> => {
       return JSON.stringify({
         "questions": [
           {"id": 1, "text": "How satisfied are you with our product?", "average_score": 4.2},
-          {"id": 2, "text": "How likely are you to recommend our product?", "average_score": 4.5}
+          {"id": 2, "text": "How likely are you to recommend our product?", "average_score": 4.5},
+          {"id": 3, "text": "How likely are you to recommend our product?", "average_score": 4.5},
+          {"id": 4, "text": "How likely are you to recommend our product?", "average_score": 4.5},
+          {"id": 5, "text": "How likely are you to recommend our product?", "average_score": 4.5}
         ]
       }, null, 2);
     case 'xlsx':
