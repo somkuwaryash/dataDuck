@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { Dataset, getDatasetContent } from "@/utils/datasetUtils";
 
 export interface CodeSnippet {
@@ -7,7 +7,7 @@ export interface CodeSnippet {
   code: string;
   output: string;
   visualization?: {
-    type: 'line' | 'bar' | 'pie';
+    type: "line" | "bar" | "pie";
     data: Array<{ [key: string]: string | number }>;
     xKey: string;
     yKey: string;
@@ -17,14 +17,14 @@ export interface CodeSnippet {
 
 interface ExecutionOutput {
   plot?: string;
-  visualization?: CodeSnippet['visualization'];
+  visualization?: CodeSnippet["visualization"];
   [key: string]: unknown;
 }
 
 const initialCodeSnippets: CodeSnippet[] = [
   {
-    id: 'data-loading',
-    title: 'Data Loading',
+    id: "data-loading",
+    title: "Data Loading",
     code: `
 import pandas as pd
 import io
@@ -43,11 +43,11 @@ print(df.head())
 print("\\nDataset Information:")
 print(df.info())
     `,
-    output: ''
+    output: "",
   },
   {
-    id: 'data-exploration',
-    title: 'Data Exploration',
+    id: "data-exploration",
+    title: "Data Exploration",
     code: `
 # Assuming 'df' is your DataFrame
 
@@ -63,11 +63,11 @@ for column in df.columns:
     print(f"\\nUnique values in {column}:")
     print(df[column].value_counts())
     `,
-    output: ''
+    output: "",
   },
   {
-    id: 'data-cleaning',
-    title: 'Data Cleaning',
+    id: "data-cleaning",
+    title: "Data Cleaning",
     code: `
 # Assuming 'df' is your DataFrame
 
@@ -88,11 +88,11 @@ df = df[(np.abs(stats.zscore(df.select_dtypes(include=np.number))) < 3).all(axis
 print("Data cleaning completed. Updated DataFrame info:")
 print(df.info())
     `,
-    output: ''
+    output: "",
   },
   {
-    id: 'data-visualization',
-    title: 'Data Visualization',
+    id: "data-visualization",
+    title: "Data Visualization",
     code: `
     import matplotlib.pyplot as plt
     import io
@@ -144,11 +144,11 @@ print(df.info())
         print(f"Visualization created for column: {numeric_column}")
         print(json.dumps({"plot": plot, "visualization": visualization}))
     `,
-    output: '',
+    output: "",
   },
   {
-    id: 'misc',
-    title: 'Misc',
+    id: "misc",
+    title: "Misc",
     code: `
 # This section is for miscellaneous code or experiments
 
@@ -161,13 +161,13 @@ print(greet("World"))
 
 # You can add any other code or experiments here
     `,
-    output: ''
+    output: "",
   },
 ];
 
 export const useCodeSnippets = (selectedDataset: Dataset | null) => {
   const [codeSnippets, setCodeSnippets] = useState<CodeSnippet[]>(() => {
-    const savedSnippets = localStorage.getItem('codeSnippets');
+    const savedSnippets = localStorage.getItem("codeSnippets");
     return savedSnippets ? JSON.parse(savedSnippets) : initialCodeSnippets;
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -177,8 +177,8 @@ export const useCodeSnippets = (selectedDataset: Dataset | null) => {
     if (selectedDataset) {
       setIsLoading(true);
       setError(null);
-      getDatasetContent(selectedDataset.fileName)
-        .then(content => {
+      getDatasetContent(selectedDataset.filename) // Changed from fileName to filename
+        .then((content) => {
           const dataLoadingCode = `
 import pandas as pd
 import io
@@ -200,13 +200,15 @@ print("\\nDataset Information:")
 print(df.info())
           `;
 
-          setCodeSnippets(snippets =>
-            snippets.map(snippet =>
-              snippet.id === 'data-loading' ? { ...snippet, code: dataLoadingCode } : snippet
+          setCodeSnippets((snippets) =>
+            snippets.map((snippet) =>
+              snippet.id === "data-loading"
+                ? { ...snippet, code: dataLoadingCode }
+                : snippet
             )
           );
         })
-        .catch(err => {
+        .catch((err) => {
           setError(`Failed to load dataset: ${err.message}`);
         })
         .finally(() => {
@@ -216,32 +218,47 @@ print(df.info())
   }, [selectedDataset]);
 
   useEffect(() => {
-    localStorage.setItem('codeSnippets', JSON.stringify(codeSnippets));
+    localStorage.setItem("codeSnippets", JSON.stringify(codeSnippets));
   }, [codeSnippets]);
 
   const handleCodeChange = (id: string, newCode: string) => {
-    setCodeSnippets((snippets) => 
-      snippets.map(snippet =>
+    setCodeSnippets((snippets) =>
+      snippets.map((snippet) =>
         snippet.id === id ? { ...snippet, code: newCode } : snippet
       )
     );
   };
 
   const handleExecute = (id: string, output: ExecutionOutput) => {
-    setCodeSnippets(snippets =>
-      snippets.map(snippet =>
-        snippet.id === id ? { ...snippet, output: JSON.stringify(output), visualization: output.visualization } : snippet
+    setCodeSnippets((snippets) =>
+      snippets.map((snippet) =>
+        snippet.id === id
+          ? {
+              ...snippet,
+              output: JSON.stringify(output),
+              visualization: output.visualization,
+            }
+          : snippet
       )
     );
   };
 
   const clearOutput = (id: string) => {
-    setCodeSnippets(snippets =>
-      snippets.map(snippet =>
-        snippet.id === id ? { ...snippet, output: '', visualization: undefined } : snippet
+    setCodeSnippets((snippets) =>
+      snippets.map((snippet) =>
+        snippet.id === id
+          ? { ...snippet, output: "", visualization: undefined }
+          : snippet
       )
     );
   };
 
-  return { codeSnippets, isLoading, error, handleCodeChange, handleExecute, clearOutput };
+  return {
+    codeSnippets,
+    isLoading,
+    error,
+    handleCodeChange,
+    handleExecute,
+    clearOutput,
+  };
 };

@@ -39,20 +39,32 @@ const AnalysisPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const handleNewChat = useCallback(() => {
+    setAnalysisResults(null);
+    // Reset any other state variables related to the current analysis
+  }, []);
+
   const handlePyodideReady = useCallback(() => {
     setIsPyodideReady(true);
   }, []);
 
   useEffect(() => {
-    const datasetId = searchParams.get("dataset");
-    if (datasetId) {
-      const dataset = getDatasetById(datasetId);
-      if (dataset) {
-        setSelectedDataset(dataset);
-      } else {
-        setError("Dataset not found");
+    const fetchDataset = async () => {
+      const datasetId = searchParams.get("dataset");
+      console.log('Fetching dataset with ID:', datasetId);
+      if (datasetId) {
+        const dataset = await getDatasetById(datasetId);
+        if (dataset) {
+          console.log('Dataset found:', dataset);
+          setSelectedDataset(dataset);
+        } else {
+          console.error('Dataset not found for ID:', datasetId);
+          setError("Dataset not found");
+        }
       }
-    }
+    };
+  
+    fetchDataset();
   }, [searchParams]);
 
   const handleDatasetSelect = useCallback(
@@ -87,7 +99,7 @@ const AnalysisPage: React.FC = () => {
       setAnalysisResults(simulatedResponse);
     } catch (err) {
       setError("Failed to process query. Please try again.");
-      console.error("Failed to process query:", err);
+      console.log('Error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -129,13 +141,17 @@ const AnalysisPage: React.FC = () => {
                       <ChatInterface 
                         onQuerySubmit={handleQuerySubmit} 
                         dataFrameInfo={dataFrameInfo}
+                        onNewChat={handleNewChat}
                       />
                     </TabsContent>
                     <TabsContent value="visualization" className="h-full">
                       <VisualizationArea results={analysisResults} isLoading={isLoading} />
                     </TabsContent>
                     <TabsContent value="code" className="h-full">
-                      <CodeAndConsole isPyodideReady={isPyodideReady} selectedDataset={selectedDataset} />
+                      <CodeAndConsole 
+                        isPyodideReady={isPyodideReady} 
+                        selectedDataset={selectedDataset}
+                      />
                     </TabsContent>
                   </div>
                 </Tabs>

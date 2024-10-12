@@ -1,65 +1,64 @@
 // src/components/DataPreview.tsx
 
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useDatasets, getDatasetContent, Dataset } from '@/utils/datasetUtils';
-import { executePythonCode } from '@/utils/pyodideUtils';
-import { Loader2, FileText } from 'lucide-react';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import React, { useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDatasets, getDatasetContent, Dataset } from "@/utils/datasetUtils";
+import { executePythonCode } from "@/utils/pyodideUtils";
+import { Loader2, FileText } from "lucide-react";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
+import { writeFileToPyodideFS } from '@/utils/pyodideUtils';
+
 
 interface DataPreviewProps {
   onDatasetSelect: (dataset: Dataset, dataFrame: string) => void;
   selectedDatasetId: string | null;
 }
 
-const DataPreview: React.FC<DataPreviewProps> = ({ onDatasetSelect, selectedDatasetId }) => {
+const DataPreview: React.FC<DataPreviewProps> = ({
+  onDatasetSelect,
+  selectedDatasetId,
+}) => {
   const datasets = useDatasets();
   const [previewContent, setPreviewContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleDatasetSelect = useCallback(async (dataset: Dataset) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const content = await getDatasetContent(dataset.fileName);
-      setPreviewContent(content);
-      const code = `
-import pandas as pd
-import io
 
-data = """
-${content}
-"""
+const handleDatasetSelect = useCallback(async (dataset: Dataset) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const content = await getDatasetContent(dataset.filename);
+    const decoder = new TextDecoder('utf-8');
+    const textContent = decoder.decode(content);
+    setPreviewContent(textContent);
 
-df = pd.read_csv(io.StringIO(data))
-print(df.head())
-print("\\nDataset Information:")
-print(df.info())
-      `;
-      const { output } = await executePythonCode(code);
-      onDatasetSelect(dataset, output);
-    } catch (error) {
-      console.error('Error processing dataset:', error);
-      setError('Failed to load dataset. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onDatasetSelect]);
+    // Write the data to a file in Pyodide's virtual filesystem
+    writeFileToPyodideFS('/data.csv', textContent);
 
-  useEffect(() => {
-    if (selectedDatasetId) {
-      const selectedDataset = datasets.find(d => d.id === selectedDatasetId);
-      if (selectedDataset) {
-        handleDatasetSelect(selectedDataset);
-      }
-    }
-  }, [selectedDatasetId, datasets, handleDatasetSelect]);
+    const code = `
+      import pandas as pd
+      
+      # Read the data from the file in Pyodide's filesystem
+      df = pd.read_csv('/data.csv')
+      print(df.head())
+      print("\\nDataset Information:")
+      print(df.info())
+    `;
+    const { output } = await executePythonCode(code);
+    onDatasetSelect(dataset, output);
+  } catch (error) {
+    console.error('Error processing dataset:', error);
+    setError('Failed to load dataset. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+}, [onDatasetSelect]);
 
   return (
     <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
@@ -84,8 +83,12 @@ print(df.info())
                 <div className="flex items-center">
                   <FileText className="mr-3 h-5 w-5 text-primary-400" />
                   <div className="flex flex-col">
-                    <span className="font-semibold text-sm">{dataset.name}</span>
-                    <span className="text-xs text-gray-400">{dataset.fileName}</span>
+                    <span className="font-semibold text-sm">
+                      {dataset.name}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {dataset.filename}
+                    </span>
                   </div>
                 </div>
               </button>
@@ -100,16 +103,12 @@ print(df.info())
                 <Loader2 className="h-8 w-8 animate-spin" />
               </div>
             )}
-            {error && (
-              <div className="text-red-500">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-red-500">{error}</div>}
             {previewContent && !isLoading && (
               <SyntaxHighlighter
                 language="json"
                 style={vscDarkPlus}
-                customStyle={{ background: 'transparent' }}
+                customStyle={{ background: "transparent" }}
                 className="text-sm"
               >
                 {previewContent}

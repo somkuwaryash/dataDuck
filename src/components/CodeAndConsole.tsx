@@ -46,7 +46,6 @@ const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady, selecte
       console.error("Failed to parse output:", e);
       parsedOutput = output;
     }
-    // TODO: Consider using executionResult for additional processing or debugging
     console.log('Execution result:', executionResult);
     await handleExecute(id, parsedOutput);
     setIsExecuting(false);
@@ -75,6 +74,7 @@ const CodeAndConsole: React.FC<CodeAndConsoleProps> = ({ isPyodideReady, selecte
                 onExecute={(output, executionResult) => handleCodeExecution(snippet.id, output, executionResult)}
                 title={`${snippet.title} Code`}
                 isPyodideReady={isPyodideReady}
+                selectedDataset={selectedDataset}
               />
               <Console
                 output={snippet.output}

@@ -18,21 +18,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              try {
-                var mode = localStorage.getItem('theme');
-                var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-                if (!mode && supportDarkMode) document.documentElement.classList.add('dark');
-                if (!mode) return;
-                document.documentElement.classList.add(mode);
-              } catch (e) {}
-            })();
-          `
-        }} />
-      </head>
       <body className={`${inter.variable} font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300`}>
         <Providers>
           <div className="flex flex-col min-h-screen">

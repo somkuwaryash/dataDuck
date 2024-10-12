@@ -4,16 +4,17 @@ import { executePythonCode } from '@/utils/pyodideUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Play, Copy } from 'lucide-react';
 import Editor from '@monaco-editor/react';
-
+import { getDatasetContent } from '@/utils/datasetUtils';
 interface CodePanelProps {
   code: string;
   onChange: (code: string) => void;
   onExecute: (output: string, executionResult: string) => void;
   title: string;
   isPyodideReady: boolean;
+  selectedDataset: { filename: string } | null;
 }
 
-const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title, isPyodideReady }) => {
+const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title, isPyodideReady, selectedDataset }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -24,12 +25,35 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
       onExecute('Python environment is not ready yet. Please wait and try again.', '');
       return;
     }
-
+  
+    if (!selectedDataset) {
+      console.log('No dataset selected');
+      onExecute('Please select a dataset before executing code.', '');
+      return;
+    }
+  
     setIsLoading(true);
     setError(null);
     try {
-      console.log('Executing code:', code);
-      const { output, executionResult } = await executePythonCode(code);
+      // Fetch the dataset content
+      const content = await getDatasetContent(selectedDataset.filename);
+      const decoder = new TextDecoder('utf-8');
+      const textContent = decoder.decode(content);
+  
+      const updatedCode = `
+  import pandas as pd
+  import io
+  
+  data = """
+  ${textContent}
+  """
+  
+  # Read the data into a pandas DataFrame
+  df = pd.read_csv(io.StringIO(data))
+  
+  `;
+      console.log('Executing code:', updatedCode);
+      const { output, executionResult } = await executePythonCode(updatedCode);
       console.log('Execution result:', { output, executionResult });
       onExecute(output, executionResult);
     } catch (error) {
@@ -66,7 +90,7 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
             variant="outline"
             size="sm"
             onClick={handleExecute}
-            disabled={isLoading || !isPyodideReady}
+            disabled={isLoading || !isPyodideReady || !selectedDataset}
             className="bg-gray-800 text-gray-100 hover:bg-gray-700"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
@@ -74,7 +98,6 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
         </div>
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden p-4 flex flex-col">
-      <CardContent className="flex-grow overflow-hidden p-0">
         <Editor
           height="100%"
           defaultLanguage="python"
@@ -88,7 +111,6 @@ const CodePanel: React.FC<CodePanelProps> = ({ code, onChange, onExecute, title,
             automaticLayout: true,
           }}
         />
-      </CardContent>
         {error && (
           <div className="mt-2 text-red-500">
             Error: {error}

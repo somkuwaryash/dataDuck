@@ -1,13 +1,24 @@
-// src/components/FileUpload.tsx
 'use client';
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FiUploadCloud, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
+import { saveUploadedFile, DatasetMetadata } from '@/utils/dataStorage';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { toast } from '@/hooks/use-toast';
 
-const FileUpload: React.FC = () => {
+
+interface FileUploadProps {
+  onUploadSuccess?: (metadata: DatasetMetadata) => void;
+}
+
+
+
+const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -25,19 +36,42 @@ const FileUpload: React.FC = () => {
     multiple: false,
   });
 
-  // In the handleFileUpload function, use the file parameter
-const handleFileUpload = async (file: File) => {
-  setUploadStatus('idle');
-  try {
-    // Simulate file upload
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Uploaded file:', file.name); // Use the file parameter
-    setUploadStatus('success');
-  } catch (error) {
-    console.error('Upload failed:', error);
-    setUploadStatus('error');
-  }
-};
+  const handleFileUpload = async (file: File) => {
+    setUploadStatus('uploading');
+    setUploadProgress(0);
+
+    try {
+      // Simulating upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 200);
+
+      const metadata = await saveUploadedFile(file);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setUploadStatus('success');
+      
+      if (onUploadSuccess) {
+        onUploadSuccess(metadata);
+      }
+
+      toast({
+        title: "Upload Successful",
+        description: `${file.name} has been uploaded successfully.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Upload failed:', error);
+      setUploadStatus('error');
+      
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="max-w-xl mx-auto mt-10">
@@ -59,6 +93,16 @@ const handleFileUpload = async (file: File) => {
         <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
           <p className="font-semibold">{uploadedFile.name}</p>
           <p className="text-sm text-gray-600 dark:text-gray-300">{(uploadedFile.size / 1024).toFixed(2)} KB</p>
+          {uploadStatus === 'uploading' && (
+            <Progress value={uploadProgress} className="mt-2" />
+          )}
+        </div>
+      )}
+
+      {uploadStatus === 'uploading' && (
+        <div className="mt-4 p-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg flex items-center">
+          <FiUploadCloud className="animate-bounce mr-2" />
+          Uploading... {uploadProgress.toFixed(0)}%
         </div>
       )}
 
@@ -75,6 +119,18 @@ const handleFileUpload = async (file: File) => {
           Upload failed. Please try again.
         </div>
       )}
+
+      <Button
+        onClick={() => {
+          setUploadedFile(null);
+          setUploadStatus('idle');
+          setUploadProgress(0);
+        }}
+        className="mt-4"
+        variant="outline"
+      >
+        Clear
+      </Button>
     </div>
   );
 };
