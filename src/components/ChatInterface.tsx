@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { queryAI, AIResponse, ChatMessage } from '@/utils/aiUtils';
 import { executePythonCode } from '@/utils/pyodideUtils';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Avatar } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -118,7 +118,7 @@ Use the 'df' DataFrame for your analysis.`
               {message.code && (
                 <div className="mb-2">
                   <div className="text-sm font-semibold mb-1">Generated Code:</div>
-                  <SyntaxHighlighter language="python" style={vs2015} className="rounded-md text-sm">
+                  <SyntaxHighlighter language="python" style={vscDarkPlus} className="rounded-md text-sm">
                     {message.code}
                   </SyntaxHighlighter>
                 </div>

@@ -9,7 +9,7 @@ import { useDatasets, getDatasetContent, Dataset } from '@/utils/datasetUtils';
 import { executePythonCode } from '@/utils/pyodideUtils';
 import { Loader2, FileText } from 'lucide-react';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { cn } from "@/lib/utils";
 
 interface DataPreviewProps {
@@ -108,7 +108,7 @@ print(df.info())
             {previewContent && !isLoading && (
               <SyntaxHighlighter
                 language="json"
-                style={vs2015}
+                style={vscDarkPlus}
                 customStyle={{ background: 'transparent' }}
                 className="text-sm"
               >

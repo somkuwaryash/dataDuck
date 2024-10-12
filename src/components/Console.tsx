@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Loader2, Copy, Trash2 } from 'lucide-react';
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
 
 SyntaxHighlighter.registerLanguage('python', python);
@@ -67,13 +67,14 @@ const Console: React.FC<ConsoleProps> = ({ output, visualization, title, isLoadi
             </div>
           ) : (
             <>
+            {/* {parsedOutput} */}
               <SyntaxHighlighter
                 language="python"
-                style={vs2015}
+                style={vscDarkPlus}
                 customStyle={{ background: 'transparent' }}
                 className="font-mono text-sm mb-4"
               >
-                {parsedOutput ? JSON.stringify(parsedOutput, null, 2) : output || 'No output yet. Execute some code to see the results.'}
+                {parsedOutput ? parsedOutput : output || 'No output yet. Execute some code to see the results.'}
               </SyntaxHighlighter>
               {base64Plot && (
                 <div className="mb-4">

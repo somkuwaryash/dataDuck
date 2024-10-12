@@ -29,7 +29,7 @@ declare global {
         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
       });
   
-      await pyodide.loadPackage(["numpy", "pandas", "matplotlib"]);
+      await pyodide.loadPackage(["numpy", "pandas", "matplotlib", "scipy"]);
       window.pyodide = pyodide;
     } else if (typeof window !== "undefined") {
       pyodide = window.pyodide;

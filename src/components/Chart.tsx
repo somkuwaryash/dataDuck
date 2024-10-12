@@ -3,7 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes'
-import Plotly from 'plotly.js';
+import Plotly from 'plotly.js-dist-min';
 
 const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 
