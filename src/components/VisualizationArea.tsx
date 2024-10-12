@@ -1,7 +1,9 @@
+'use client';
+
 import React from 'react';
 import Chart from './Chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2 } from "lucide-react";
 
 interface VisualizationAreaProps {
   results: {
@@ -13,11 +15,20 @@ interface VisualizationAreaProps {
       yKey: string;
       title: string;
     };
-    plot?: string; // Base64 encoded image
   } | null;
+  isLoading: boolean;
 }
 
-const VisualizationArea: React.FC<VisualizationAreaProps> = ({ results }) => {
+const VisualizationArea: React.FC<VisualizationAreaProps> = ({ results, isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+        <span>Analyzing data...</span>
+      </div>
+    );
+  }
+
   if (!results) {
     return (
       <div className="h-full flex items-center justify-center text-center text-gray-500">
@@ -32,29 +43,18 @@ const VisualizationArea: React.FC<VisualizationAreaProps> = ({ results }) => {
         <CardTitle>Analysis Results</CardTitle>
       </CardHeader>
       <CardContent className="flex-grow overflow-auto">
-        <ScrollArea className="h-full">
-          <p className="mb-4 text-gray-700 dark:text-gray-300">{results.text}</p>
-          {results.plot && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Generated Plot</h3>
-              <img src={`data:image/png;base64,${results.plot}`} alt="Generated plot" className="max-w-full" />
-            </div>
-          )}
-          {results.visualization && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Interactive Chart</h3>
-              <div className="h-64 md:h-96">
-                <Chart
-                  type={results.visualization.type}
-                  data={results.visualization.data}
-                  xKey={results.visualization.xKey}
-                  yKey={results.visualization.yKey}
-                  title={results.visualization.title}
-                />
-              </div>
-            </div>
-          )}
-        </ScrollArea>
+        <p className="mb-4 text-gray-700 dark:text-gray-300">{results.text}</p>
+        {results.visualization && (
+          <div className="h-64 md:h-96 mt-4">
+            <Chart
+              type={results.visualization.type}
+              data={results.visualization.data}
+              xKey={results.visualization.xKey}
+              yKey={results.visualization.yKey}
+              title={results.visualization.title}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

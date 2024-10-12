@@ -1,5 +1,3 @@
-// src/components/AnalysisPage.tsx
-
 'use client';
 
 import React, { useState, useCallback, useEffect } from "react";
@@ -13,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dataset, getDatasetById } from "@/utils/datasetUtils";
 import { AIResponse } from "@/utils/aiUtils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 const PyodideProvider = dynamic(() => import("@/components/PyodideProvider"), {
   ssr: false,
@@ -34,6 +34,8 @@ const AnalysisPage: React.FC = () => {
   const [dataFrameInfo, setDataFrameInfo] = useState<string>('');
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const [isPyodideReady, setIsPyodideReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -47,6 +49,8 @@ const AnalysisPage: React.FC = () => {
       const dataset = getDatasetById(datasetId);
       if (dataset) {
         setSelectedDataset(dataset);
+      } else {
+        setError("Dataset not found");
       }
     }
   }, [searchParams]);
@@ -63,27 +67,45 @@ const AnalysisPage: React.FC = () => {
   );
 
   const handleQuerySubmit = useCallback(async (query: string, aiResponse: AIResponse, executionResult: string): Promise<void> => {
-    const simulatedResponse: AnalysisResult = {
-      text: `Analysis results for query: "${query}"\n\nAI Response: ${aiResponse.text}\n\nExecution Result: ${executionResult}`,
-      visualization: {
-        type: "bar",
-        data: [
-          { name: "Category A", value: Math.random() * 100 },
-          { name: "Category B", value: Math.random() * 100 },
-          { name: "Category C", value: Math.random() * 100 },
-        ],
-        xKey: "name",
-        yKey: "value",
-        title: "Sample Visualization",
-      },
-    };
-  
-    setAnalysisResults(simulatedResponse);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const simulatedResponse: AnalysisResult = {
+        text: `Analysis results for query: "${query}"\n\nAI Response: ${aiResponse.text}\n\nExecution Result: ${executionResult}`,
+        visualization: {
+          type: "bar",
+          data: [
+            { name: "Category A", value: Math.random() * 100 },
+            { name: "Category B", value: Math.random() * 100 },
+            { name: "Category C", value: Math.random() * 100 },
+          ],
+          xKey: "name",
+          yKey: "value",
+          title: "Sample Visualization",
+        },
+      };
+      setAnalysisResults(simulatedResponse);
+    } catch (err) {
+      setError("Failed to process query. Please try again.");
+      console.error("Failed to process query:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <PyodideProvider onReady={handlePyodideReady}>
       <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Data Analysis</h1>
         {isPyodideReady ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
             <Card className="lg:col-span-1 flex flex-col">
@@ -98,9 +120,9 @@ const AnalysisPage: React.FC = () => {
               <CardContent className="p-4">
                 <Tabs defaultValue="chat" className="flex-grow flex flex-col">
                   <TabsList>
-                    <TabsTrigger value="chat" className="flex-1">Chat</TabsTrigger>
-                    <TabsTrigger value="visualization" className="flex-1">Visualization</TabsTrigger>
-                    <TabsTrigger value="code" className="flex-1">Code</TabsTrigger>
+                    <TabsTrigger value="chat">Chat</TabsTrigger>
+                    <TabsTrigger value="visualization">Visualization</TabsTrigger>
+                    <TabsTrigger value="code">Code</TabsTrigger>
                   </TabsList>
                   <div className="flex-grow overflow-y-auto">
                     <TabsContent value="chat" className="h-full">
@@ -110,7 +132,7 @@ const AnalysisPage: React.FC = () => {
                       />
                     </TabsContent>
                     <TabsContent value="visualization" className="h-full">
-                      <VisualizationArea results={analysisResults} />
+                      <VisualizationArea results={analysisResults} isLoading={isLoading} />
                     </TabsContent>
                     <TabsContent value="code" className="h-full">
                       <CodeAndConsole isPyodideReady={isPyodideReady} selectedDataset={selectedDataset} />
@@ -121,7 +143,10 @@ const AnalysisPage: React.FC = () => {
             </Card>
           </div>
         ) : (
-          <div>Loading Python environment...</div>
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+            <span>Loading Python environment...</span>
+          </div>
         )}
       </div>
     </PyodideProvider>
