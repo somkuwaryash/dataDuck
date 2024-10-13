@@ -14,6 +14,7 @@ const Header: React.FC = () => {
             <li><NavLink href="/upload">Upload</NavLink></li>
             <li><NavLink href="/analyze">Analyze</NavLink></li>
             <li><NavLink href="/visualize">Visualize</NavLink></li>
+            <li><NavLink href="/documents">Documents</NavLink></li>
           </ul>
           {/* <ThemeSwitcher /> */}
         </div>

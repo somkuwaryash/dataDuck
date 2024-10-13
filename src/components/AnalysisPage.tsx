@@ -82,6 +82,8 @@ const AnalysisPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
+      // Here you can process the AI response and execution result to create a more meaningful analysis result
+      // For now, we'll use a simulated response
       const simulatedResponse: AnalysisResult = {
         text: `Analysis results for query: "${query}"\n\nAI Response: ${aiResponse.text}\n\nExecution Result: ${executionResult}`,
         visualization: {
@@ -99,7 +101,7 @@ const AnalysisPage: React.FC = () => {
       setAnalysisResults(simulatedResponse);
     } catch (err) {
       setError("Failed to process query. Please try again.");
-      console.log('Error:', err);
+      console.error('Error:', err);
     } finally {
       setIsLoading(false);
     }
