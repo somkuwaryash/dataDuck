@@ -60,65 +60,65 @@ const handleDatasetSelect = useCallback(async (dataset: Dataset) => {
   }
 }, [onDatasetSelect]);
 
-  return (
-    <Card className="h-[600px] flex flex-col bg-gray-900 text-gray-100 border-gray-700">
-      <CardHeader className="pb-2 flex-shrink-0 border-b border-gray-700">
-        <CardTitle>Available Datasets</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow overflow-hidden p-0 flex flex-col">
-        <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-2">
-            {datasets.map((dataset) => (
-              <button
-                key={dataset.id}
-                onClick={() => handleDatasetSelect(dataset)}
-                className={cn(
-                  "w-full text-left p-3 rounded-lg transition-all duration-200 ease-in-out",
-                  "hover:bg-gray-800/50",
-                  selectedDatasetId === dataset.id
-                    ? "bg-gray-800 border-2 border-primary-500 shadow-md"
-                    : "bg-gray-900 border border-gray-700"
-                )}
-              >
-                <div className="flex items-center">
-                  <FileText className="mr-3 h-5 w-5 text-primary-400" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-sm">
-                      {dataset.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {dataset.filename}
-                    </span>
-                  </div>
+return (
+  <Card className="h-[600px] flex flex-col bg-blue-50 text-blue-900 border-blue-200">
+    <CardHeader className="pb-2 flex-shrink-0 border-b border-blue-200">
+      <CardTitle>Available Datasets</CardTitle>
+    </CardHeader>
+    <CardContent className="flex-grow overflow-hidden p-0 flex flex-col">
+      <ScrollArea className="flex-grow">
+        <div className="p-4 space-y-2">
+          {datasets.map((dataset) => (
+            <button
+              key={dataset.id}
+              onClick={() => handleDatasetSelect(dataset)}
+              className={cn(
+                "w-full text-left p-3 rounded-lg transition-all duration-200 ease-in-out",
+                "hover:bg-blue-100",
+                selectedDatasetId === dataset.id
+                  ? "bg-blue-200 border-2 border-blue-400 shadow-md"
+                  : "bg-blue-50 border border-blue-200"
+              )}
+            >
+              <div className="flex items-center">
+                <FileText className="mr-3 h-5 w-5 text-blue-600" />
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">
+                    {dataset.name}
+                  </span>
+                  <span className="text-xs text-blue-600">
+                    {dataset.filename}
+                  </span>
                 </div>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-        <div className="border-t border-gray-700 p-4 flex-shrink-0">
-          <h3 className="font-semibold mb-2">Preview:</h3>
-          <ScrollArea className="h-[200px]">
-            {isLoading && (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin" />
               </div>
-            )}
-            {error && <div className="text-red-500">{error}</div>}
-            {previewContent && !isLoading && (
-              <SyntaxHighlighter
-                language="json"
-                style={vscDarkPlus}
-                customStyle={{ background: "transparent" }}
-                className="text-sm"
-              >
-                {previewContent}
-              </SyntaxHighlighter>
-            )}
-          </ScrollArea>
+            </button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
-  );
+      </ScrollArea>
+      <div className="border-t border-blue-200 p-4 flex-shrink-0">
+        <h3 className="font-semibold mb-2">Preview:</h3>
+        <ScrollArea className="h-[200px] bg-gray-800 rounded-md">
+          {isLoading && (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+            </div>
+          )}
+          {error && <div className="text-red-400 p-2">{error}</div>}
+          {previewContent && !isLoading && (
+            <SyntaxHighlighter
+              language="json"
+              style={vscDarkPlus}
+              customStyle={{ background: "transparent", padding: "1rem" }}
+              className="text-sm"
+            >
+              {previewContent}
+            </SyntaxHighlighter>
+          )}
+        </ScrollArea>
+      </div>
+    </CardContent>
+  </Card>
+);
 };
 
 export default DataPreview;

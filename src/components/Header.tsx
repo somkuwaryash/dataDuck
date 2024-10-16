@@ -4,13 +4,13 @@ import Link from 'next/link'
 
 const Header: React.FC = () => {
   return (
-    <header className="bg-primary-600 dark:bg-primary-800 text-white shadow-md">
-      <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
+    <header className="bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-800 dark:to-primary-900 text-white shadow-lg">
+      <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold hover:text-primary-200 transition-colors">
-          DataDuck
+          <span className="text-primary-200">Data</span>Duck
         </Link>
         <div className="flex items-center space-x-6">
-          <ul className="hidden md:flex space-x-6">
+          <ul className="flex space-x-6">
             <li><NavLink href="/upload">Upload</NavLink></li>
             <li><NavLink href="/analyze">Analyze</NavLink></li>
             <li><NavLink href="/visualize">Visualize</NavLink></li>
@@ -24,7 +24,7 @@ const Header: React.FC = () => {
 }
 
 const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => (
-  <Link href={href} className="hover:text-primary-200 transition-colors font-medium">
+  <Link href={href} className="hover:text-primary-200 transition-colors font-medium text-sm uppercase tracking-wider">
     {children}
   </Link>
 )

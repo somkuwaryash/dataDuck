@@ -1,5 +1,7 @@
 // src/components/ChatInterface.tsx
 
+'use client';
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FiSend, FiLoader, FiRefreshCcw, FiDownload, FiCopy, FiPlus } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
@@ -46,7 +48,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
   const [isRAGMode, setIsRAGMode] = useState(false);
   const [businessScenariosData, setBusinessScenariosData] = useState<BusinessScenario[]>([]);
   const [selectedExample, setSelectedExample] = useState<ChatMessage | null>(null);
-  const [learningProgress, setLearningProgress] = useState(0);
   const [isAddingExample, setIsAddingExample] = useState(false);
   const [newExampleQuery, setNewExampleQuery] = useState('');
   const [newExampleResponse, setNewExampleResponse] = useState('');
@@ -189,8 +190,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
           await onQuerySubmit(query, aiResponse, executionResult);
         }
 
-        // Update learning progress
-        setLearningProgress(prev => Math.min(prev + 10, 100));
       } catch (error) {
         console.error('Error processing query:', error);
         const errorMessage: DisplayMessage = { 
@@ -332,18 +331,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
     );
   };
 
-  // Function to render learning progress
-  const renderLearningProgress = () => (
-    <div className="mt-4">
-      <Label>Learning Progress</Label>
-      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2">
-        <div
-          className="bg-blue-600 h-2.5 rounded-full"
-          style={{ width: `${learningProgress}%` }}
-        ></div>
-      </div>
-    </div>
-  );
 
   // Main render function
   return (
@@ -390,7 +377,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
         {/* Sidebar for examples and learning progress */}
         <div className="w-1/4 p-4 border-r border-gray-200 dark:border-gray-700">
           {renderExamples()}
-          {renderLearningProgress()}
         </div>
 
         {/* Chat area */}

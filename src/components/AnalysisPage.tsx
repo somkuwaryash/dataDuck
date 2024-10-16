@@ -118,38 +118,39 @@ const AnalysisPage: React.FC = () => {
 
   return (
     <PyodideProvider onReady={handlePyodideReady}>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Data Analysis</h1>
+      <div className="container mx-auto px-4 py-8 bg-gray-50 min-h-screen">
+        <h1 className="text-4xl font-bold mb-8 text-center text-blue-600">Data Analysis</h1>
         {isPyodideReady ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-            <Card className="lg:col-span-1 flex flex-col">
-              <CardContent className="p-4 flex-grow overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
+            <Card className="lg:col-span-1 flex flex-col shadow-lg">
+              <CardContent className="p-6 flex-grow overflow-y-auto">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-800">Available Datasets</h2>
                 <DataPreview
                   onDatasetSelect={handleDatasetSelect}
                   selectedDatasetId={selectedDataset?.id || null}
                 />
               </CardContent>
             </Card>
-            <Card className="lg:col-span-2">
-              <CardContent className="p-4">
+            <Card className="lg:col-span-2 shadow-lg">
+              <CardContent className="p-6">
                 <Tabs defaultValue="chat" className="flex-grow flex flex-col">
-                  <TabsList>
-                    <TabsTrigger value="chat">Chat</TabsTrigger>
-                    <TabsTrigger value="visualization">Visualization</TabsTrigger>
-                    <TabsTrigger value="code">Code</TabsTrigger>
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="chat" className="px-6 py-2">Chat</TabsTrigger>
+                    <TabsTrigger value="visualization" className="px-6 py-2">Visualization</TabsTrigger>
+                    <TabsTrigger value="code" className="px-6 py-2">Code</TabsTrigger>
                   </TabsList>
-                  <div className="flex-grow overflow-y-auto">
-                    <TabsContent value="chat" className="h-full">
+                  <div className="flex-grow overflow-y-auto bg-white rounded-lg shadow-inner">
+                    <TabsContent value="chat" className="h-full p-4">
                       <ChatInterface 
                         onQuerySubmit={handleQuerySubmit} 
                         dataFrameInfo={dataFrameInfo}
                         onNewChat={handleNewChat}
                       />
                     </TabsContent>
-                    <TabsContent value="visualization" className="h-full">
+                    <TabsContent value="visualization" className="h-full p-4">
                       <VisualizationArea results={analysisResults} isLoading={isLoading} />
                     </TabsContent>
-                    <TabsContent value="code" className="h-full">
+                    <TabsContent value="code" className="h-full p-4">
                       <CodeAndConsole 
                         isPyodideReady={isPyodideReady} 
                         selectedDataset={selectedDataset}
@@ -161,9 +162,9 @@ const AnalysisPage: React.FC = () => {
             </Card>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-            <span>Loading Python environment...</span>
+          <div className="flex items-center justify-center h-64 bg-white rounded-lg shadow-md">
+            <Loader2 className="mr-4 h-10 w-10 animate-spin text-blue-500" />
+            <span className="text-lg text-gray-600">Loading Python environment...</span>
           </div>
         )}
       </div>
