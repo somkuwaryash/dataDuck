@@ -13,7 +13,6 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Avatar } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -353,20 +352,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onQuerySubmit, dataFrameI
       <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-t-lg">
         <h2 className="text-xl font-semibold">Chat Interface</h2>
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="rag-mode"
-              checked={isRAGMode}
-              onCheckedChange={setIsRAGMode}
-            />
-            <Label htmlFor="rag-mode">RAG Mode</Label>
+        <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-md">
+        <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={isRAGMode}
+                onChange={(e) => setIsRAGMode(e.target.checked)}
+              />
+              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">RAG Mode</span>
+            </label>
           </div>
           {!isRAGMode && (
             <Select value={selectedScenario} onValueChange={setSelectedScenario}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[200px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <SelectValue placeholder="Select scenario" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                 <SelectItem value="general">General Analysis</SelectItem>
                 {businessScenariosData.map((scenario) => (
                   <SelectItem key={scenario.name} value={scenario.name}>
