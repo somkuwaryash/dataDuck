@@ -219,7 +219,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { FiSend, FiLoader, FiRefreshCcw } from 'react-icons/fi';
+import { FiSend, FiLoader, FiRefreshCcw, FiDownload } from 'react-icons/fi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -232,6 +232,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { saveAs } from 'file-saver';
+
 
 interface DisplayMessage {
   id: string;
@@ -359,6 +361,13 @@ Use the 'df' DataFrame for your analysis.`
     }
   };
 
+  const handleExport = (message: DisplayMessage) => {
+    if (message.plot) {
+      const blob = new Blob([atob(message.plot)], { type: 'image/png' });
+      saveAs(blob, 'generated_plot.png');
+    }
+  };
+
   const renderMessage = (message: DisplayMessage) => {
     return (
       <Card className={`mb-4 ${message.isUser ? 'ml-auto bg-primary-100' : 'mr-auto bg-secondary-100'} max-w-[80%]`}>
@@ -404,6 +413,13 @@ Use the 'df' DataFrame for your analysis.`
               <div className="mt-2">
                 <div className="text-sm font-semibold mb-1">Generated Plot:</div>
                 <img src={`data:image/png;base64,${message.plot}`} alt="Generated Plot" className="max-w-full h-auto rounded-md" />
+              </div>
+            )}
+            {message.isUser ? null : (
+              <div className="mt-2">
+                <Button onClick={() => handleExport(message)} variant="outline" size="sm" className="mb-2">
+                  <FiDownload className="mr-2" /> Export
+                </Button>
               </div>
             )}
 
